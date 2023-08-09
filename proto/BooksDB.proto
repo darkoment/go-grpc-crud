@@ -1,0 +1,182 @@
+/*
+    Здесь содержится схема структуры данных,
+    для буфера протоколов, с которой работает gRPC
+    
+*/
+
+//Синтаксис для буфера
+syntax ="proto3"; 
+
+package BooksDB;
+
+//параметр определяющий путь, куда будет импортирован сгенерированных код
+option go_package = "./proto"; 
+
+message Book {
+    string bookid = 1;
+    string name = 2;
+    string year = 3;
+    string edition = 4;
+}
+
+message Author {
+    string authorid = 1;
+    string first_name = 2;
+    string last_name = 3;
+}
+
+message BookAuthor {
+    string bookid = 1;
+    string authorid = 2;
+}
+
+
+
+message CreateBookRequest {
+    Book book =1;
+}
+
+message CreateBookResponse {
+    Book book =1;
+}
+
+message ReadBookRequest {
+    string bookid = 1;
+}
+
+message ReadBookResponse {
+    Book book = 1;
+}
+
+message ReadBooksRequest {
+
+}
+
+message ReadBooksResponse {
+   repeated Book books = 1;
+}
+
+message UpdateBookRequest {
+    Book book = 1;
+}
+
+message UpdateBookResponse {
+    Book book = 1;
+}
+
+message DeleteBookRequest {
+    string bookid = 1;
+}
+
+message DeleteBookResponse {
+    bool success = 1;
+}
+
+
+
+message CreateAuthorRequest {
+    Author author =1;
+}
+
+message CreateAuthorResponse {
+    Author author =1;
+}
+
+message ReadAuthorRequest {
+    string authorid = 1;
+}
+
+message ReadAuthorResponse {
+    Author author = 1;
+}
+
+message ReadAuthorsRequest {
+   
+}
+
+message ReadAuthorsResponse {
+   repeated Author authors = 1;
+}
+
+message UpdateAuthorRequest {
+    Author author = 1;
+}
+
+message UpdateAuthorResponse {
+    Author author = 1;
+}
+
+message DeleteAuthorRequest {
+    string authorid = 1;
+}
+
+message DeleteAuthorResponse {
+    bool success = 1;
+}
+
+
+
+message CreateBookAuthorRequest {
+    BookAuthor bookauthor = 1;
+}
+
+message CreateBookAuthorResponse {
+    BookAuthor bookauthor = 1;
+}
+
+message ReadBookAuthorRequest {
+    string bookid = 1;
+    string authorid = 2;
+}
+
+message ReadBookAuthorResponse {
+    BookAuthor bookauthor = 1;
+}
+
+message ReadBooksAuthorsRequest {
+     
+}
+
+message ReadBooksAuthorsResponse {
+    repeated BookAuthor booksauthors = 1;
+}
+
+message UpdateBookAuthorRequest {
+    BookAuthor bookauthor = 1;
+}
+
+message UpdateBookAuthorResponse {
+    BookAuthor bookauthor = 1;
+}
+
+message DeleteBookAuthorRequest {
+    string bookid = 1;
+    string authorid = 2;
+}
+
+message DeleteBookAuthorResponse {
+    bool success = 1;
+}
+
+
+
+service BookService {
+    rpc CreateBook(CreateBookRequest) returns (CreateBookResponse) {}
+    rpc GetBook (ReadBookRequest) returns (ReadBookResponse) {}
+    rpc GetBooks (ReadBooksRequest) returns (ReadBooksResponse) {}
+    rpc UpdateBook (UpdateBookRequest) returns (UpdateBookResponse) {}
+    rpc DeleteBook (DeleteBookRequest) returns (DeleteBookResponse) {}
+
+    rpc CreateAuthor(CreateAuthorRequest) returns (CreateAuthorResponse) {}
+    rpc GetAuthor (ReadAuthorRequest) returns (ReadAuthorResponse) {}
+    rpc GetAuthors (ReadAuthorsRequest) returns (ReadAuthorsResponse) {}
+    rpc UpdateAuthor (UpdateAuthorRequest) returns (UpdateAuthorResponse) {}
+    rpc DeleteAuthor (DeleteAuthorRequest) returns (DeleteAuthorResponse) {}
+
+    rpc CreateBookAuthor (CreateBookAuthorRequest) returns (CreateBookAuthorResponse) {}
+    rpc GetBookAuthor (ReadBookAuthorRequest) returns (ReadBookAuthorResponse) {}
+    rpc GetBooksAuthors (ReadBooksAuthorsRequest) returns (ReadBooksAuthorsResponse) {}
+    rpc UpdateBookAuthor (UpdateBookAuthorRequest) returns (UpdateBookAuthorResponse) {}
+    rpc DeleteBookAuthor (DeleteBookAuthorRequest) returns (DeleteBookAuthorResponse) {}
+
+}
