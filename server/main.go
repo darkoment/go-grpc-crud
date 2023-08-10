@@ -160,13 +160,22 @@ func (*server) GetBook(ctx context.Context, req *pb.ReadBookRequest) (*pb.ReadBo
 // Метод отвечающий за получения записей книг из таблицы Book
 func (*server) GetBooks(ctx context.Context, req *pb.ReadBooksRequest) (*pb.ReadBooksResponse, error) {
 	fmt.Println("Read Books")
-	book := []*pb.Book{}
-	res := DB.Find(&book)
+	var books []Book
+	res := DB.Find(&books)
 	if res.RowsAffected == 0 {
 		return nil, errors.New("Books not found")
 	}
+	allBooks := make([]*pb.Book, len(books))
+	for i := range books {
+		allBooks[i] = &pb.Book{
+			Bookid:  books[i].BookID,
+			Name:    books[i].Name,
+			Year:    books[i].Year,
+			Edition: books[i].Edition,
+		}
+	}
 	return &pb.ReadBooksResponse{
-		Books: book,
+		Books: allBooks,
 	}, nil
 }
 
