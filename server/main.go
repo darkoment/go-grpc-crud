@@ -14,7 +14,7 @@ import (
 	"net"
 
 	pb "github.com/darkoment/go-grpc-crud-api/proto"
-	"github.com/google/uuid"
+	//"github.com/google/uuid" - убрана за отсутствие необходимости в использовании
 
 	"google.golang.org/grpc"
 	"gorm.io/driver/mysql"
@@ -36,7 +36,7 @@ type Test struct {
 // Структура для созадния таблицы Book
 // С ее атрибутами
 type Book struct {
-	BookID  string `gorm:"primarykey; unsigned auto_increment"`
+	BookID  uint32 `gorm:"primarykey;autoIncrement"`
 	Name    string
 	Year    string
 	Edition string
@@ -46,7 +46,7 @@ type Book struct {
 // Структура для создания таблицы author
 // С ее атрибутами
 type Author struct {
-	AuthorID  string `gorm:"primarykey"`
+	AuthorID  uint32 `gorm:"primarykey;autoIncrement"`
 	FirstName string
 	LastName  string
 	Books     []*Book `gorm:"many2many:book_author"`
@@ -116,7 +116,7 @@ type server struct {
 func (*server) CreateBook(ctx context.Context, req *pb.CreateBookRequest) (*pb.CreateBookResponse, error) {
 	fmt.Println("Create Book")
 	book := req.GetBook()
-	book.Bookid = uuid.New().String()
+	//book.Bookid = uuid.New().String()
 
 	data := Book{
 		BookID:  book.GetBookid(),
@@ -220,7 +220,7 @@ func (*server) DeleteBook(ctx context.Context, req *pb.DeleteBookRequest) (*pb.D
 func (*server) CreateAuthor(ctx context.Context, req *pb.CreateAuthorRequest) (*pb.CreateAuthorResponse, error) {
 	fmt.Println("Create Author")
 	author := req.GetAuthor()
-	author.Authorid = uuid.New().String()
+	//author.Authorid = uuid.New().String()
 
 	data := Author{
 		AuthorID:  author.GetAuthorid(),
