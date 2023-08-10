@@ -36,7 +36,7 @@ type Test struct {
 // Структура для созадния таблицы Book
 // С ее атрибутами
 type Book struct {
-	BookID  string `gorm:"primarykey"`
+	BookID  string `gorm:"primarykey; unsigned auto_increment"`
 	Name    string
 	Year    string
 	Edition string
@@ -89,11 +89,11 @@ func DatabaseConnection() {
 		port,
 		dbName,
 	)
+
 	// Передаем dsn в gorm
 	// подробнее https://gorm.io/ru_RU/docs/connecting_to_the_database.html
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	DB.AutoMigrate(Book{})
-
 	//DB.Migrator().RenameTable("books", "book")
 	//DB.Migrator().RenameTable("authors", "author")
 	//DB.Migrator().CurrentDatabase()

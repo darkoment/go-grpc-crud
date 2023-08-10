@@ -13,21 +13,21 @@ package BooksDB;
 option go_package = "./proto"; 
 
 message Book {
-    string bookid = 1;
+    uint32 bookid = 1;
     string name = 2;
     string year = 3;
     string edition = 4;
 }
 
 message Author {
-    string authorid = 1;
+    uint32 authorid = 1;
     string first_name = 2;
     string last_name = 3;
 }
 
 message BookAuthor {
-    string bookid = 1;
-    string authorid = 2;
+    uint32 bookid = 1;
+    uint32 authorid = 2;
 }
 
 

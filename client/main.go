@@ -16,14 +16,14 @@ var (
 )
 
 type Book struct {
-	BookID  string `json:"book_id"`
+	BookID  uint32 `json:"book_id"`
 	Name    string `json:"name"`
 	Year    string `json:"year"`
 	Edition string `json:"edition"`
 }
 
 type Author struct {
-	AuthorID  string `json:"author_id"`
+	AuthorID  uint32 `json:"author_id"`
 	FirstName string `json:"first_name"`
 	LastName  string `json:"last_name"`
 }
