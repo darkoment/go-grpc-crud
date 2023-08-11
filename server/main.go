@@ -58,8 +58,8 @@ type Author struct {
 // Возможно эта структура не нужна
 
 type BookAuthor struct {
-	BookID   uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_book_id
-	AuthorID uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_author_id
+	BookBookID     uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_book_id  // к сожалению приходится писать такие кривые столбцы, т.к. gorm не переназначает именна столбцов ManyToMany
+	AuthorAuthorID uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_author_id
 }
 
 // Интерфейс для названия таблиц
@@ -327,8 +327,8 @@ func (*server) CreateBookAuthor(ctx context.Context, req *pb.CreateBookAuthorReq
 	book_author := req.GetBookauthor()
 
 	data := BookAuthor{
-		BookID:   book_author.GetBookid(),
-		AuthorID: book_author.GetAuthorid(),
+		BookBookID:     book_author.GetBookid(),
+		AuthorAuthorID: book_author.GetAuthorid(),
 	}
 
 	res := DB.Create(&data)
@@ -360,8 +360,8 @@ func (*server) GetBooksAuthors(ctx context.Context, req *pb.ReadBooksAuthorsRequ
 	allRelated := make([]*pb.BookAuthor, len(book_author))
 	for i := range book_author {
 		allRelated[i] = &pb.BookAuthor{
-			Authorid: book_author[i].AuthorID,
-			Bookid:   book_author[i].BookID,
+			Authorid: book_author[i].AuthorAuthorID,
+			Bookid:   book_author[i].BookBookID,
 		}
 	}
 	return &pb.ReadBooksAuthorsResponse{
