@@ -29,34 +29,34 @@ func init() {
 var DB *gorm.DB
 var err error
 
-type Test struct {
-	Name string `gorm:"primarykey"`
-}
+// type Test struct {
+// 	Name string `gorm:"primarykey"`
+// }
 
 // Структура для созадния таблицы Book
 // С ее атрибутами
 type Book struct {
-	BookID  uint32 `gorm:"primarykey;autoIncrement"`
-	Name    string
-	Year    string
-	Edition string
+	BookID  uint32    `gorm:"primarykey;autoIncrement;not null"`
+	Name    string    `gorm:"not null"`
+	Year    string    `gorm:"not null"`
+	Edition string    `gorm:"not null"`
 	Authors []*Author `gorm:"many2many:book_author"`
 }
 
 // Структура для создания таблицы author
 // С ее атрибутами
 type Author struct {
-	AuthorID  uint32 `gorm:"primarykey;autoIncrement"`
-	FirstName string
-	LastName  string
+	AuthorID  uint32  `gorm:"primarykey;autoIncrement;not null"`
+	FirstName string  `gorm:"not null"`
+	LastName  string  `gorm:"not null"`
 	Books     []*Book `gorm:"many2many:book_author"`
 }
 
 // Структура для создания смежной таблицы bookauthor
 // С ее атрибутами
 type BooksAuthors struct {
-	BookID   string `gorm:"primarykey"`
-	AuthorID string `gorm:"primarykey"`
+	BookID   uint32 `gorm:"primarykey;not null"`
+	AuthorID uint32 `gorm:"primarykey;not null"`
 }
 
 // Интерфейс для названия таблиц
@@ -71,6 +71,10 @@ func (Book) TableName() string {
 
 func (Author) TableName() string {
 	return "author"
+}
+
+func (BooksAuthors) TableName() string {
+	return "book_author"
 }
 
 //Функция для установления соединения
@@ -216,32 +220,7 @@ func (*server) DeleteBook(ctx context.Context, req *pb.DeleteBookRequest) (*pb.D
 	}, nil
 }
 
-// Метод отвечающий за создание автора в таблице Author
-func (*server) CreateAuthor(ctx context.Context, req *pb.CreateAuthorRequest) (*pb.CreateAuthorResponse, error) {
-	fmt.Println("Create Author")
-	author := req.GetAuthor()
-	//author.Authorid = uuid.New().String()
-
-	data := Author{
-		AuthorID:  author.GetAuthorid(),
-		FirstName: author.GetFirstName(),
-		LastName:  author.GetLastName(),
-	}
-
-	res := DB.Create(&data)
-	if res.RowsAffected == 0 {
-		return nil, errors.New("Author creation unsuccessful")
-	}
-	return &pb.CreateAuthorResponse{
-		Author: &pb.Author{
-			Authorid:  author.GetAuthorid(),
-			FirstName: author.GetFirstName(),
-			LastName:  author.GetLastName(),
-		},
-	}, nil
-}
-
-// Метод отвечающий за получение записи об авторе из таблицы Author
+// Метод отвечающий за получение записи о книге из таблицы Author
 func (*server) GetAuthor(ctx context.Context, req *pb.ReadAuthorRequest) (*pb.ReadAuthorResponse, error) {
 	fmt.Println("Read Author", req.GetAuthorid())
 	var author Author
@@ -258,21 +237,28 @@ func (*server) GetAuthor(ctx context.Context, req *pb.ReadAuthorRequest) (*pb.Re
 	}, nil
 }
 
-// Метод отвечающий за получение записей об авторах в таблице Author
+// Метод отвечающий за получения записей книг из таблицы Author
 func (*server) GetAuthors(ctx context.Context, req *pb.ReadAuthorsRequest) (*pb.ReadAuthorsResponse, error) {
 	fmt.Println("Read Authors")
-	authors := []*pb.Author{}
-
+	var authors []Author
 	res := DB.Find(&authors)
 	if res.RowsAffected == 0 {
 		return nil, errors.New("Authors not found")
 	}
+	allAuthors := make([]*pb.Author, len(authors))
+	for i := range authors {
+		allAuthors[i] = &pb.Author{
+			Authorid:  authors[i].AuthorID,
+			FirstName: authors[i].FirstName,
+			LastName:  authors[i].LastName,
+		}
+	}
 	return &pb.ReadAuthorsResponse{
-		Authors: authors,
+		Authors: allAuthors,
 	}, nil
 }
 
-// Метод отвечающий за обновление записи об авторе в таблице Author
+// Метод отвечающий за обновление записи о книге в таблице Author
 func (*server) UpdateAuthor(ctx context.Context, req *pb.UpdateAuthorRequest) (*pb.UpdateAuthorResponse, error) {
 	fmt.Println("Update Author")
 	var author Author
@@ -294,7 +280,7 @@ func (*server) UpdateAuthor(ctx context.Context, req *pb.UpdateAuthorRequest) (*
 	}, nil
 }
 
-// Метод отвечающий за удаление записи об авторе из таблицы Author (удаление происходит по индексу!)
+// Метод отвечающий за удаление записи о книге из таблицы Author (удаление происходит по индексу)
 func (*server) DeleteAuthor(ctx context.Context, req *pb.DeleteAuthorRequest) (*pb.DeleteAuthorResponse, error) {
 	fmt.Println("Delete Author")
 	var author Author
