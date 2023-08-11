@@ -40,7 +40,7 @@ type Book struct {
 	Name    string    `gorm:"not null"`
 	Year    string    `gorm:"not null"`
 	Edition string    `gorm:"not null"`
-	Authors []*Author `gorm:"many2many:book_author"`
+	Authors []*Author `gorm:"many2many:book_author;"` //References:author_id
 }
 
 // Структура для создания таблицы author
@@ -49,14 +49,17 @@ type Author struct {
 	AuthorID  uint32  `gorm:"primarykey;autoIncrement;not null"`
 	FirstName string  `gorm:"not null"`
 	LastName  string  `gorm:"not null"`
-	Books     []*Book `gorm:"many2many:book_author"`
+	Books     []*Book `gorm:"many2many:book_author;"` //References:book_id
 }
 
 // Структура для создания смежной таблицы bookauthor
 // С ее атрибутами
-type BooksAuthors struct {
-	BookID   uint32 `gorm:"primarykey;not null"`
-	AuthorID uint32 `gorm:"primarykey;not null"`
+
+// Возможно эта структура не нужна
+
+type BookAuthor struct {
+	BookID   uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_book_id
+	AuthorID uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_author_id
 }
 
 // Интерфейс для названия таблиц
@@ -73,7 +76,7 @@ func (Author) TableName() string {
 	return "author"
 }
 
-func (BooksAuthors) TableName() string {
+func (BookAuthor) TableName() string {
 	return "book_author"
 }
 
@@ -97,7 +100,7 @@ func DatabaseConnection() {
 	// Передаем dsn в gorm
 	// подробнее https://gorm.io/ru_RU/docs/connecting_to_the_database.html
 	DB, err = gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	DB.AutoMigrate(Book{})
+	DB.AutoMigrate(Book{}, Author{})
 	//DB.Migrator().RenameTable("books", "book")
 	//DB.Migrator().RenameTable("authors", "author")
 	//DB.Migrator().CurrentDatabase()
@@ -220,6 +223,31 @@ func (*server) DeleteBook(ctx context.Context, req *pb.DeleteBookRequest) (*pb.D
 	}, nil
 }
 
+// Метод отвечающий за создание записи о книге в таблицу Author
+func (*server) CreateAuthor(ctx context.Context, req *pb.CreateAuthorRequest) (*pb.CreateAuthorResponse, error) {
+	fmt.Println("Create Author")
+	author := req.GetAuthor()
+	//book.Authorid = uuid.New().String()
+
+	data := Author{
+		AuthorID:  author.GetAuthorid(),
+		FirstName: author.GetFirstName(),
+		LastName:  author.GetLastName(),
+	}
+
+	res := DB.Create(&data)
+	if res.RowsAffected == 0 {
+		return nil, errors.New("Author creation unsuccessful")
+	}
+	return &pb.CreateAuthorResponse{
+		Author: &pb.Author{
+			Authorid:  author.GetAuthorid(),
+			FirstName: author.GetFirstName(),
+			LastName:  author.GetLastName(),
+		},
+	}, nil
+}
+
 // Метод отвечающий за получение записи о книге из таблицы Author
 func (*server) GetAuthor(ctx context.Context, req *pb.ReadAuthorRequest) (*pb.ReadAuthorResponse, error) {
 	fmt.Println("Read Author", req.GetAuthorid())
@@ -291,6 +319,27 @@ func (*server) DeleteAuthor(ctx context.Context, req *pb.DeleteAuthorRequest) (*
 
 	return &pb.DeleteAuthorResponse{
 		Success: true,
+	}, nil
+}
+
+func (*server) CreateBookAuthor(ctx context.Context, req *pb.CreateBookAuthorRequest) (*pb.CreateBookAuthorResponse, error) {
+	fmt.Println("Create related Book and Author")
+	book_author := req.GetBookauthor()
+
+	data := BookAuthor{
+		BookID:   book_author.GetBookid(),
+		AuthorID: book_author.GetAuthorid(),
+	}
+
+	res := DB.Create(&data)
+	if res.RowsAffected == 0 {
+		return nil, errors.New("relation creation unsuccessful")
+	}
+	return &pb.CreateBookAuthorResponse{
+		Bookauthor: &pb.BookAuthor{
+			Bookid:   book_author.GetBookid(),
+			Authorid: book_author.GetAuthorid(),
+		},
 	}, nil
 }
 
