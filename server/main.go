@@ -343,6 +343,44 @@ func (*server) CreateBookAuthor(ctx context.Context, req *pb.CreateBookAuthorReq
 	}, nil
 }
 
+// Метод отвечающий за получение записи о книге из таблицы BookAuthor
+// func (*server) GetBookAuthor(ctx context.Context, req *pb.ReadBookAuthorRequest) (*pb.ReadBookAuthorResponse, error) {
+// 	fmt.Println("Read relates Book Author", req.GetAuthorid())
+
+// }
+
+// Метод отвечающий за получения записей книг из таблицы BookAuthor
+func (*server) GetBooksAuthors(ctx context.Context, req *pb.ReadBooksAuthorsRequest) (*pb.ReadBooksAuthorsResponse, error) {
+	fmt.Println("Read related Books Authors")
+	var book_author []BookAuthor
+	res := DB.Find(&book_author)
+	if res.RowsAffected == 0 {
+		return nil, errors.New("relates not found")
+	}
+	allRelated := make([]*pb.BookAuthor, len(book_author))
+	for i := range book_author {
+		allRelated[i] = &pb.BookAuthor{
+			Authorid: book_author[i].AuthorID,
+			Bookid:   book_author[i].BookID,
+		}
+	}
+	return &pb.ReadBooksAuthorsResponse{
+		Booksauthors: allRelated,
+	}, nil
+}
+
+// Метод отвечающий за обновление записи о книге в таблице BookAuthor
+//func (*server) UpdateBookAuthor(ctx context.Context, req *pb.UpdateBookAuthorRequest) (*pb.UpdateBookAuthorResponse, error) {
+// 	fmt.Println("Update BookAuthor")
+
+// }
+
+// // Метод отвечающий за удаление записи о книге из таблицы BookAuthor (удаление происходит по индексу)
+// func (*server) DeleteBookAuthor(ctx context.Context, req *pb.DeleteBookAuthorRequest) (*pb.DeleteBookAuthorResponse, error) {
+// 	fmt.Println("Delete BookAuthor")
+
+// }
+
 func main() {
 	fmt.Println("gRPC server running ...")
 

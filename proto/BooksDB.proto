@@ -160,6 +160,27 @@ message DeleteBookAuthorResponse {
 
 
 
+message GetBookAuthorsRequest {
+    Book book = 1;
+}
+
+message GetBookAuthorsResponse {
+    Book book = 1;
+    repeated Author author = 2;
+}
+
+message GetBooksAuthorRequest {
+    Author author = 1;
+    
+}
+
+message GetBooksAuthorResponse {
+    Author author = 2;
+    repeated Book book = 1;
+    
+}
+
+
 service BookService {
     rpc CreateBook(CreateBookRequest) returns (CreateBookResponse) {}
     rpc GetBook (ReadBookRequest) returns (ReadBookResponse) {}
@@ -178,5 +199,8 @@ service BookService {
     rpc GetBooksAuthors (ReadBooksAuthorsRequest) returns (ReadBooksAuthorsResponse) {}
     rpc UpdateBookAuthor (UpdateBookAuthorRequest) returns (UpdateBookAuthorResponse) {}
     rpc DeleteBookAuthor (DeleteBookAuthorRequest) returns (DeleteBookAuthorResponse) {}
+
+    rpc GetAuthorsBook (GetBookAuthorsRequest) returns (GetBookAuthorsResponse) {}
+    rpc GetAuthorBooks (GetBooksAuthorRequest) returns (GetBooksAuthorResponse) {}
 
 }
