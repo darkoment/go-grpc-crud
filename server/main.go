@@ -29,10 +29,6 @@ func init() {
 var DB *gorm.DB
 var err error
 
-// type Test struct {
-// 	Name string `gorm:"primarykey"`
-// }
-
 // Структура для созадния таблицы Book
 // С ее атрибутами
 type Book struct {
@@ -343,12 +339,6 @@ func (*server) CreateBookAuthor(ctx context.Context, req *pb.CreateBookAuthorReq
 	}, nil
 }
 
-// Метод отвечающий за получение записи о книге из таблицы BookAuthor
-// func (*server) GetBookAuthor(ctx context.Context, req *pb.ReadBookAuthorRequest) (*pb.ReadBookAuthorResponse, error) {
-// 	fmt.Println("Read relates Book Author", req.GetAuthorid())
-
-// }
-
 // Метод отвечающий за получения записей книг из таблицы BookAuthor
 func (*server) GetBooksAuthors(ctx context.Context, req *pb.ReadBooksAuthorsRequest) (*pb.ReadBooksAuthorsResponse, error) {
 	fmt.Println("Read related Books Authors")
@@ -369,17 +359,53 @@ func (*server) GetBooksAuthors(ctx context.Context, req *pb.ReadBooksAuthorsRequ
 	}, nil
 }
 
-// Метод отвечающий за обновление записи о книге в таблице BookAuthor
-//func (*server) UpdateBookAuthor(ctx context.Context, req *pb.UpdateBookAuthorRequest) (*pb.UpdateBookAuthorResponse, error) {
-// 	fmt.Println("Update BookAuthor")
+// Метод отвечающий за получение Книг по автору
+func (*server) GetAuthorBooks(ctx context.Context, req *pb.ReadBooksAuthorRequest) (*pb.ReadBooksAuthorResponse, error) {
+	fmt.Println("Read author and getting books: ")
+	var books []Book
+	var author Author
+	// var book_author []BookAuthor
+	//reqAuthor := req.GetAuthor()
 
-// }
+	// resAuthor := DB.Where("first_name=?", req.Author.GetFirstName(), "last_name=?", req.Author.GetLastName()).Find(&author)
+	// if resAuthor.RowsAffected == 0 {
+	// 	return nil, errors.New("Author not found")
+	// }
+	resBooks := DB.Find(&books)
+	if resBooks.RowsAffected == 0 {
+		return nil, errors.New("Books not found")
+	}
+	// resBookAuthor := DB.Find(&book_author)
+	// if resBookAuthor.RowsAffected == 0 {
+	// 	return nil, errors.New("relates not found")
+	// }
 
-// // Метод отвечающий за удаление записи о книге из таблицы BookAuthor (удаление происходит по индексу)
-// func (*server) DeleteBookAuthor(ctx context.Context, req *pb.DeleteBookAuthorRequest) (*pb.DeleteBookAuthorResponse, error) {
-// 	fmt.Println("Delete BookAuthor")
+	//resAuthor := DB.Where("first_name=?", req.Author.GetFirstName()).Preload("Books").Find(&author)
+	resAuthor := DB.Preload("Books").Find(&author)
+	if resAuthor.RowsAffected == 0 {
+		return nil, errors.New("Author not found")
+	}
 
-// }
+	allBooks := make([]*pb.Book, len(books))
+	for i := range books {
+		allBooks[i] = &pb.Book{
+			Bookid:  books[i].BookID,
+			Name:    books[i].Name,
+			Year:    books[i].Year,
+			Edition: books[i].Edition,
+		}
+	}
+
+	return &pb.ReadBooksAuthorResponse{
+		Author: &pb.Author{
+			Authorid:  author.AuthorID,
+			FirstName: author.FirstName,
+			LastName:  author.LastName,
+		},
+		Books: allBooks,
+	}, nil
+
+}
 
 func main() {
 	fmt.Println("gRPC server running ...")

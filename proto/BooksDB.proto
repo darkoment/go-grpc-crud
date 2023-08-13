@@ -166,7 +166,7 @@ message ReadBookAuthorsRequest {
 
 message ReadBookAuthorsResponse {
     Book book = 1;
-    repeated Author author = 2;
+    repeated Author authors = 2;
 }
 
 message ReadBooksAuthorRequest {
@@ -175,8 +175,8 @@ message ReadBooksAuthorRequest {
 }
 
 message ReadBooksAuthorResponse {
-    Author author = 2;
-    repeated Book book = 1;
+    Author author = 1;
+    repeated Book books = 2;
     
 }
 
