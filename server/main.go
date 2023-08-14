@@ -76,8 +76,7 @@ func (BookAuthor) TableName() string {
 	return "book_author"
 }
 
-//Функция для установления соединения
-
+// Функция для установления соединения
 func DatabaseConnection() {
 	host := "localhost"
 	port := "3306"
@@ -363,16 +362,10 @@ func (*server) GetBooksAuthors(ctx context.Context, req *pb.ReadBooksAuthorsRequ
 func (*server) GetAuthorBooks(ctx context.Context, req *pb.ReadBooksAuthorRequest) (*pb.ReadBooksAuthorResponse, error) {
 	fmt.Println("Read author and getting books: ")
 	var author Author
-	// var books []Book
+	reqAuthor := req.GetAuthor()
 
-	//resAuthor := DB.Where("first_name=?", req.Author.GetFirstName()).Preload("Books").Find(&author)
-	resAuthor := DB.Find(&author)
+	resAuthor := DB.Preload("Books").Find(&author, "first_name = ? AND last_name = ?", reqAuthor.GetFirstName(), reqAuthor.GetLastName())
 	if resAuthor.RowsAffected == 0 {
-		return nil, errors.New("Author not found")
-	}
-
-	resBooks := DB.Preload("Books").Find(&author)
-	if resBooks.RowsAffected == 0 {
 		return nil, errors.New("Author not found")
 	}
 
@@ -393,9 +386,42 @@ func (*server) GetAuthorBooks(ctx context.Context, req *pb.ReadBooksAuthorReques
 			Authorid:  author.AuthorID,
 			FirstName: author.FirstName,
 			LastName:  author.LastName,
-			Books:     getBook,
 		},
-		//Books: getBook,
+		Books: getBook,
+	}, nil
+
+}
+
+// Метод отвечающий за получение авторов книги
+func (*server) GetAuthorsBook(ctx context.Context, req *pb.ReadBookAuthorsRequest) (*pb.ReadBookAuthorsResponse, error) {
+	fmt.Println("Read author and getting books: ")
+	var book Book
+	reqBook := req.GetBook()
+
+	resBook := DB.Preload("Authors").Find(&book, "name = ?", reqBook.GetName())
+	if resBook.RowsAffected == 0 {
+		return nil, errors.New("Book not found")
+	}
+
+	getAuthor := make([]*pb.Author, len(book.Authors))
+	for i := range book.Authors {
+		getAuthor[i] = &pb.Author{
+			Authorid:  book.Authors[i].AuthorID,
+			FirstName: book.Authors[i].FirstName,
+			LastName:  book.Authors[i].LastName,
+		}
+	}
+
+	fmt.Println(getAuthor)
+
+	return &pb.ReadBookAuthorsResponse{
+		Book: &pb.Book{
+			Bookid:  book.BookID,
+			Name:    book.Name,
+			Year:    book.Year,
+			Edition: book.Edition,
+		},
+		Authors: getAuthor,
 	}, nil
 
 }
