@@ -32,20 +32,20 @@ var err error
 // Структура для созадния таблицы Book
 // С ее атрибутами
 type Book struct {
-	BookID  uint32    `gorm:"primarykey;autoIncrement;not null"`
-	Name    string    `gorm:"not null"`
-	Year    string    `gorm:"not null"`
-	Edition string    `gorm:"not null"`
-	Authors []*Author `gorm:"many2many:book_author;"` //References:author_id
+	BookID  uint32   `gorm:"primarykey;autoIncrement;not null"`
+	Name    string   `gorm:"not null"`
+	Year    string   `gorm:"not null"`
+	Edition string   `gorm:"not null"`
+	Authors []Author `gorm:"many2many:book_author;"` //References:author_id
 }
 
 // Структура для создания таблицы author
 // С ее атрибутами
 type Author struct {
-	AuthorID  uint32  `gorm:"primarykey;autoIncrement;not null"`
-	FirstName string  `gorm:"not null"`
-	LastName  string  `gorm:"not null"`
-	Books     []*Book `gorm:"many2many:book_author;"` //References:book_id
+	AuthorID  uint32 `gorm:"primarykey;autoIncrement;not null"`
+	FirstName string `gorm:"not null"`
+	LastName  string `gorm:"not null"`
+	Books     []Book `gorm:"many2many:book_author;"` //References:book_id
 }
 
 // Структура для создания смежной таблицы bookauthor
@@ -362,47 +362,40 @@ func (*server) GetBooksAuthors(ctx context.Context, req *pb.ReadBooksAuthorsRequ
 // Метод отвечающий за получение Книг по автору
 func (*server) GetAuthorBooks(ctx context.Context, req *pb.ReadBooksAuthorRequest) (*pb.ReadBooksAuthorResponse, error) {
 	fmt.Println("Read author and getting books: ")
-	var books []Book
 	var author Author
-	// var book_author []BookAuthor
-	//reqAuthor := req.GetAuthor()
-
-	// resAuthor := DB.Where("first_name=?", req.Author.GetFirstName(), "last_name=?", req.Author.GetLastName()).Find(&author)
-	// if resAuthor.RowsAffected == 0 {
-	// 	return nil, errors.New("Author not found")
-	// }
-	resBooks := DB.Find(&books)
-	if resBooks.RowsAffected == 0 {
-		return nil, errors.New("Books not found")
-	}
-	// resBookAuthor := DB.Find(&book_author)
-	// if resBookAuthor.RowsAffected == 0 {
-	// 	return nil, errors.New("relates not found")
-	// }
+	// var books []Book
 
 	//resAuthor := DB.Where("first_name=?", req.Author.GetFirstName()).Preload("Books").Find(&author)
-	resAuthor := DB.Preload("Books").Find(&author)
+	resAuthor := DB.Find(&author)
 	if resAuthor.RowsAffected == 0 {
 		return nil, errors.New("Author not found")
 	}
 
-	allBooks := make([]*pb.Book, len(books))
-	for i := range books {
-		allBooks[i] = &pb.Book{
-			Bookid:  books[i].BookID,
-			Name:    books[i].Name,
-			Year:    books[i].Year,
-			Edition: books[i].Edition,
+	resBooks := DB.Preload("Books").Find(&author)
+	if resBooks.RowsAffected == 0 {
+		return nil, errors.New("Author not found")
+	}
+
+	getBook := make([]*pb.Book, len(author.Books))
+	for i := range author.Books {
+		getBook[i] = &pb.Book{
+			Bookid:  author.Books[i].BookID,
+			Name:    author.Books[i].Name,
+			Year:    author.Books[i].Year,
+			Edition: author.Books[i].Edition,
 		}
 	}
+
+	fmt.Println(getBook)
 
 	return &pb.ReadBooksAuthorResponse{
 		Author: &pb.Author{
 			Authorid:  author.AuthorID,
 			FirstName: author.FirstName,
 			LastName:  author.LastName,
+			Books:     getBook,
 		},
-		Books: allBooks,
+		//Books: getBook,
 	}, nil
 
 }

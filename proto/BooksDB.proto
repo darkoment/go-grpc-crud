@@ -17,12 +17,16 @@ message Book {
     string name = 2;
     string year = 3;
     string edition = 4;
+    //repeated string authors = 5;
+    repeated Author authors = 5;
 }
 
 message Author {
     uint32 authorid = 1;
     string first_name = 2;
     string last_name = 3;
+    //repeated string books = 4;
+    repeated Book books = 4;
 }
 
 message BookAuthor {
@@ -176,7 +180,7 @@ message ReadBooksAuthorRequest {
 
 message ReadBooksAuthorResponse {
     Author author = 1;
-    repeated Book books = 2;
+    Book books = 2; //repeated Book books = 2;
     
 }
 
