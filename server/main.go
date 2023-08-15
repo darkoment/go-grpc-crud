@@ -51,8 +51,6 @@ type Author struct {
 // Структура для создания смежной таблицы bookauthor
 // С ее атрибутами
 
-// Возможно эта структура не нужна
-
 type BookAuthor struct {
 	BookBookID     uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_book_id  // к сожалению приходится писать такие кривые столбцы, т.к. gorm не переназначает именна столбцов ManyToMany
 	AuthorAuthorID uint32 `gorm:"primarykey;not null;"` //foreignKey:fk_author_id
@@ -79,9 +77,9 @@ func (BookAuthor) TableName() string {
 // Функция для установления соединения
 func DatabaseConnection() {
 	host := "localhost"
-	port := "3306"
+	port := "3303"
 	dbName := "test"
-	dbUser := "TestAdmin"
+	dbUser := "root"
 	password := "TestOnGo"
 
 	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
@@ -317,6 +315,7 @@ func (*server) DeleteAuthor(ctx context.Context, req *pb.DeleteAuthorRequest) (*
 	}, nil
 }
 
+// Метод отвечаюзий за создание связи между book и author
 func (*server) CreateBookAuthor(ctx context.Context, req *pb.CreateBookAuthorRequest) (*pb.CreateBookAuthorResponse, error) {
 	fmt.Println("Create related Book and Author")
 	book_author := req.GetBookauthor()
@@ -335,6 +334,41 @@ func (*server) CreateBookAuthor(ctx context.Context, req *pb.CreateBookAuthorReq
 			Bookid:   book_author.GetBookid(),
 			Authorid: book_author.GetAuthorid(),
 		},
+	}, nil
+}
+
+// Метод отвечающий за обновление связи между book и author
+func (*server) UpdateBookAuthor(ctx context.Context, req *pb.UpdateBookAuthorRequest) (*pb.UpdateBookAuthorResponse, error) {
+	fmt.Println("Update BookAuthor")
+	var book_author BookAuthor
+	reqBookAuthor := req.GetBookauthor()
+
+	res := DB.Model(&book_author).Where("book_book_id=? AND author_author_id=?", reqBookAuthor.Bookid, reqBookAuthor.Authorid).Updates(
+		BookAuthor{AuthorAuthorID: reqBookAuthor.Authorid, BookBookID: reqBookAuthor.Bookid})
+
+	if res.RowsAffected == 0 {
+		return nil, errors.New("relation not found")
+	}
+
+	return &pb.UpdateBookAuthorResponse{
+		Bookauthor: &pb.BookAuthor{
+			Bookid:   book_author.BookBookID,
+			Authorid: book_author.AuthorAuthorID,
+		},
+	}, nil
+}
+
+// Метод отвечающий за удаление записи связи между book и author
+func (*server) DeleteBookAuthor(ctx context.Context, req *pb.DeleteBookAuthorRequest) (*pb.DeleteBookAuthorResponse, error) {
+	fmt.Println("Delete BookAuthor")
+	var book_author BookAuthor
+	res := DB.Where("book_book_id=? AND author_author_id", req.GetBookid(), req.GetAuthorid()).Delete(&book_author)
+	if res.RowsAffected == 0 {
+		return nil, errors.New("relation not found")
+	}
+
+	return &pb.DeleteBookAuthorResponse{
+		Success: true,
 	}, nil
 }
 
